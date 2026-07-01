@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { GAMES, CATEGORIES } from '../data/games';
+import { GAMES, CATEGORIES, getGamesByCategory } from '../data/games';
 import { GameCard } from './GameCard';
 import { useI18n } from '../lib/i18n';
 import { getCategoryLabel } from '../lib/localizedGames';
@@ -26,7 +26,7 @@ function GameRow({ category, icon, theme, onSeeAll, seeAllLabel }: {
   seeAllLabel?: string;
 }) {
   const { lang } = useI18n();
-  const games = GAMES.filter(g => g.category === category).slice(0, 12);
+  const games = getGamesByCategory(category).slice(0, 12);
   if (games.length === 0) return null;
 
   return (
@@ -76,7 +76,7 @@ function GameRow({ category, icon, theme, onSeeAll, seeAllLabel }: {
 
 export function GameLibrary({ selectedCategory, onCategoryChange }: GameLibraryProps) {
   const { t, lang } = useI18n();
-  const filteredGames = GAMES.filter(g => g.category === selectedCategory);
+  const filteredGames = getGamesByCategory(selectedCategory);
   const isAll = selectedCategory === 'All';
 
   return (

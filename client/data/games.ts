@@ -158,6 +158,11 @@ export const GAMES: Game[] = [
   { id: '147', title: 'Swipe Cubes', category: 'All Games', rating: 4.4, thumbnail: 'https://cdn.timepass.games/images/e0a90418-37ff-415d-b148-4e910ed2ec62.webp', iframeUrl: 'https://cdn.timepass.games/games/54059053-48bb-472b-9ab1-0f34d79bdb8f/a6926bb8-0450-4a3f-9cda-67403d2c7be6/' },
 ];
 
+export function getGamesByCategory(category: string): Game[] {
+  if (category === 'All Games') return GAMES;
+  return GAMES.filter((g) => g.category === category);
+}
+
 export const CATEGORIES = [
   { name: 'Top 10 Games', icon: '🏆', count: 0 },
   { name: 'Easy to Play', icon: '⭐', count: 0 },
