@@ -22,8 +22,8 @@ function GameRow({ category, icon, theme, onSeeAll, seeAllLabel }: {
   category: string;
   icon: string;
   theme: typeof SECTION_THEMES[0];
-  onSeeAll: () => void;
-  seeAllLabel: string;
+  onSeeAll?: () => void;
+  seeAllLabel?: string;
 }) {
   const { lang } = useI18n();
   const games = GAMES.filter(g => g.category === category).slice(0, 12);
@@ -41,7 +41,7 @@ function GameRow({ category, icon, theme, onSeeAll, seeAllLabel }: {
       <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none"
         style={{ background: theme.glow }} />
 
-      <div className="flex items-center justify-between mb-6">
+      <div className={`flex items-center mb-6 ${onSeeAll ? 'justify-between' : 'gap-3'}`}>
         <div className="flex items-center gap-3">
           <motion.span animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 4, repeat: Infinity }} className="text-3xl">
             {icon}
@@ -54,16 +54,18 @@ function GameRow({ category, icon, theme, onSeeAll, seeAllLabel }: {
             className="h-0.5 rounded-full hidden sm:block" style={{ background: theme.accent }}
           />
         </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onSeeAll}
-          className="px-4 py-1.5 rounded-lg text-sm font-semibold border transition-all"
-          style={{ borderColor: theme.accent, color: theme.accent }}
-        >
-          {seeAllLabel}
-        </motion.button>
+        {onSeeAll && seeAllLabel && (
+          <motion.button
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onSeeAll}
+            className="px-4 py-1.5 rounded-lg text-sm font-semibold border transition-all shrink-0"
+            style={{ borderColor: theme.accent, color: theme.accent }}
+          >
+            {seeAllLabel}
+          </motion.button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
         {games.map((game, index) => (
           <GameCard key={game.id} game={game} index={index} compact static />
         ))}
@@ -131,8 +133,10 @@ export function GameLibrary({ selectedCategory, onCategoryChange }: GameLibraryP
                 category={cat.name}
                 icon={cat.icon}
                 theme={SECTION_THEMES[i % SECTION_THEMES.length]}
-                onSeeAll={() => onCategoryChange(cat.name)}
-                seeAllLabel={t('seeAll') as string}
+                {...(cat.name === 'All Games' && {
+                  onSeeAll: () => onCategoryChange('All Games'),
+                  seeAllLabel: t('seeAll') as string,
+                })}
               />
             ))}
           </div>
@@ -142,7 +146,7 @@ export function GameLibrary({ selectedCategory, onCategoryChange }: GameLibraryP
           <motion.div
             key={selectedCategory}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4"
           >
             {filteredGames.map((game, index) => (
               <GameCard key={game.id} game={game} index={index} />

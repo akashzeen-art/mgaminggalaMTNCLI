@@ -23,11 +23,11 @@ export function FeaturedCarousel() {
 
   return (
     <>
-      <section className="relative w-full h-96 sm:h-[500px] lg:h-[600px] overflow-hidden bg-gradient-to-r from-slate-50 to-purple-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full h-full">
+      <section className="relative w-full bg-gradient-to-r from-slate-50 to-purple-50 py-6 sm:py-8 lg:h-[600px] lg:overflow-hidden overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:h-full flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-full lg:h-full">
           {/* Image carousel */}
-          <div className="relative w-full aspect-video lg:aspect-auto lg:h-full min-h-[240px] sm:min-h-[280px] rounded-lg overflow-hidden group bg-slate-100 flex items-center justify-center">
+          <div className="relative w-full aspect-[16/10] sm:aspect-video lg:aspect-auto lg:h-full max-h-[180px] sm:max-h-none sm:min-h-[220px] lg:min-h-0 rounded-lg overflow-hidden group bg-slate-100 flex items-center justify-center shrink-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -51,15 +51,15 @@ export function FeaturedCarousel() {
             {/* Navigation buttons */}
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-neon-purple/80 hover:bg-neon-purple text-white p-2 rounded-full transition-all backdrop-blur-sm"
+              className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-neon-purple/80 hover:bg-neon-purple text-white p-1.5 sm:p-2 rounded-full transition-all backdrop-blur-sm"
             >
-              <HiChevronLeft className="text-2xl" />
+              <HiChevronLeft className="text-xl sm:text-2xl" />
             </button>
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-neon-purple/80 hover:bg-neon-purple text-white p-2 rounded-full transition-all backdrop-blur-sm"
+              className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 bg-neon-purple/80 hover:bg-neon-purple text-white p-1.5 sm:p-2 rounded-full transition-all backdrop-blur-sm"
             >
-              <HiChevronRight className="text-2xl" />
+              <HiChevronRight className="text-xl sm:text-2xl" />
             </button>
 
             {/* Glow effect on hover */}
@@ -75,13 +75,13 @@ export function FeaturedCarousel() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col justify-center h-full"
+            className="flex flex-col justify-center lg:h-full min-w-0"
           >
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-block w-fit px-4 py-2 bg-purple-100 text-purple-700 text-sm font-semibold rounded-lg mb-4 border border-purple-200"
+              className="inline-block w-fit px-3 py-1.5 sm:px-4 sm:py-2 bg-purple-100 text-purple-700 text-xs sm:text-sm font-semibold rounded-lg mb-2 sm:mb-4 border border-purple-200"
             >
               {t('featuredGame') as string}
             </motion.span>
@@ -90,32 +90,22 @@ export function FeaturedCarousel() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-4xl sm:text-5xl font-black text-slate-900 mb-4"
+              className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 mb-2 sm:mb-4 leading-tight line-clamp-2"
             >
               {localized.title}
             </motion.h2>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-slate-600 text-lg mb-6"
-            >
-              {localized.category} · ★ {currentGame.rating}
-            </motion.p>
-
-            {/* Rating and category */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="flex items-center gap-4 mb-8"
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-6"
             >
-              <div className="flex items-center gap-2 bg-white/80 border border-slate-200 px-3 py-2 rounded-lg shadow-sm">
-                <FaStar className="text-yellow-500" />
+              <div className="flex items-center gap-2 bg-white/80 border border-slate-200 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg shadow-sm text-sm">
+                <FaStar className="text-yellow-500 shrink-0" />
                 <span className="text-slate-800 font-semibold">{currentGame.rating}</span>
               </div>
-              <div className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold border border-purple-200">
+              <div className="px-3 py-1.5 sm:px-4 sm:py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold border border-purple-200 text-sm">
                 {localized.category}
               </div>
             </motion.div>
@@ -124,11 +114,11 @@ export function FeaturedCarousel() {
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowModal(true)}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-neon-cyan to-neon-purple text-white font-bold text-lg rounded-xl flex items-center justify-center gap-2 transition-all hover:shadow-lg hover:shadow-neon-cyan/50"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-neon-cyan to-neon-purple text-white font-bold text-base sm:text-lg rounded-xl flex items-center justify-center gap-2 transition-all hover:shadow-lg hover:shadow-neon-cyan/50"
             >
               <IoPlay /> {t('playNow') as string}
             </motion.button>
@@ -137,8 +127,8 @@ export function FeaturedCarousel() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="flex gap-2 mt-8"
+              transition={{ delay: 0.5 }}
+              className="flex flex-wrap gap-1.5 sm:gap-2 mt-4 sm:mt-6 justify-center sm:justify-start"
             >
               {featuredGames.map((_, index) => (
                 <button

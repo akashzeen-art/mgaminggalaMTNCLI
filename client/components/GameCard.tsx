@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { IoPlay } from 'react-icons/io5';
-import { FaStar } from 'react-icons/fa';
+import { Play } from 'lucide-react';
 import { Game } from '../data/games';
 import { GameModal } from './GameModal';
 import { useLocalizedGame } from '../lib/localizedGames';
@@ -33,56 +32,40 @@ export function GameCard({ game, index = 0, compact = false, static: isStatic = 
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => setShowModal(true)}
         whileHover={{ y: -4 }}
-        className="relative cursor-pointer rounded-xl overflow-hidden bg-white border border-slate-200"
+        className="group relative cursor-pointer rounded-xl overflow-hidden"
         style={{
           boxShadow: isHovered ? `0 12px 32px ${glowColor}` : '0 2px 12px rgba(0,0,0,0.08)',
           transition: 'box-shadow 0.3s',
         }}
       >
-        {/* Thumbnail — full image visible, no crop */}
-        <div className="relative w-full aspect-video min-h-[140px] sm:min-h-[180px] lg:min-h-[200px] bg-slate-100 flex items-center justify-center overflow-hidden">
+        {/* Thumbnail with title overlay */}
+        <div className="relative w-full aspect-square bg-slate-100 overflow-hidden">
           <motion.img
             src={game.thumbnail}
             alt={localized.title}
-            className="w-full h-full object-contain object-center p-1"
-            animate={{ scale: isHovered ? 1.03 : 1 }}
-            transition={{ duration: 0.4 }}
+            className="w-full h-full object-contain object-center"
+            animate={{ scale: isHovered ? 1.05 : 1 }}
+            transition={{ duration: 0.3 }}
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
 
-          {game.featured && (
-            <div className="absolute top-2 left-2 px-2 py-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full"
-              style={{ fontSize: '10px' }}>
-              ⭐ TOP 10
-            </div>
-          )}
-
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            animate={{ opacity: isHovered ? 1 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-white"
-              style={{ background: 'linear-gradient(135deg, #06b6d4, #a855f7)', boxShadow: '0 0 20px rgba(6,182,212,0.8)' }}
+              className="w-11 h-11 rounded-full flex items-center justify-center shadow-2xl scale-90 group-hover:scale-100 transition-transform"
+              style={{ background: 'rgba(139, 92, 246, 0.9)', boxShadow: 'rgba(139, 92, 246, 0.6) 0px 0px 30px' }}
             >
-              <IoPlay className="text-lg ml-0.5" />
+              <Play className="w-5 h-5 text-white fill-white ml-0.5" aria-hidden="true" />
             </div>
-          </motion.div>
-        </div>
+          </div>
 
-        {/* Title below image */}
-        <div className="px-3 py-2.5 sm:py-3">
-          <h3
-            className="text-slate-900 font-bold leading-tight line-clamp-2"
-            style={{ fontSize: compact ? '12px' : '14px' }}
-          >
-            {localized.title}
-          </h3>
-          <div className="flex items-center gap-1 mt-1">
-            <FaStar className="text-yellow-500" style={{ fontSize: '10px' }} />
-            <span className="text-slate-500" style={{ fontSize: '11px' }}>{game.rating}</span>
+          <div className="absolute bottom-0 left-0 right-0 px-3 py-2.5 sm:py-3 z-10 pointer-events-none">
+            <h3
+              className="text-white font-bold leading-tight line-clamp-2 drop-shadow-sm"
+              style={{ fontSize: compact ? '12px' : '12px' }}
+            >
+              {localized.title}
+            </h3>
           </div>
         </div>
       </motion.div>
