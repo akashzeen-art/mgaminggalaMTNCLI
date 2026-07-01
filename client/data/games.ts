@@ -160,9 +160,9 @@ export const GAMES: Game[] = [
 
 export const CATEGORIES = [
   { name: 'Top 10 Games', icon: '🏆', count: 0 },
-  { name: 'All Games', icon: '🎮', count: 0 },
   { name: 'Easy to Play', icon: '⭐', count: 0 },
   { name: 'Puzzle', icon: '🧩', count: 0 },
   { name: 'Action', icon: '⚡', count: 0 },
   { name: 'Arcade', icon: '🕹️', count: 0 },
+  { name: 'All Games', icon: '🎮', count: 0 },
 ];
