@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import { Game } from '../data/games';
 import { GameModal } from './GameModal';
+import { LoginModal } from './LoginModal';
 import { useLocalizedGame } from '../lib/localizedGames';
+import { useAuth } from '../hooks/useAuth';
 
 interface GameCardProps {
   game: Game;
@@ -15,8 +17,10 @@ interface GameCardProps {
 export function GameCard({ game, index = 0, compact = false, static: isStatic = false }: GameCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const localized = useLocalizedGame(game);
+  const { isAuthenticated } = useAuth();
 
   const glowColor = index % 3 === 0 ? 'rgba(6,182,212,0.5)' : index % 3 === 1 ? 'rgba(168,85,247,0.5)' : 'rgba(236,72,153,0.5)';
 
@@ -30,7 +34,7 @@ export function GameCard({ game, index = 0, compact = false, static: isStatic = 
         transition={isStatic ? undefined : { delay: (index % 8) * 0.04, duration: 0.4 }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        onClick={() => setShowModal(true)}
+        onClick={() => isAuthenticated ? setShowModal(true) : setShowLogin(true)}
         whileHover={{ y: -4 }}
         className="group relative cursor-pointer rounded-xl overflow-hidden"
         style={{
@@ -71,6 +75,12 @@ export function GameCard({ game, index = 0, compact = false, static: isStatic = 
       </motion.div>
 
       {showModal && <GameModal game={game} onClose={() => setShowModal(false)} />}
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          onSuccess={() => setShowModal(true)}
+        />
+      )}
     </>
   );
 }

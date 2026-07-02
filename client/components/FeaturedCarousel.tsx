@@ -5,15 +5,19 @@ import { HiChevronLeft, HiChevronRight } from 'react-icons/hi';
 import { IoPlay } from 'react-icons/io5';
 import { FaStar } from 'react-icons/fa';
 import { GameModal } from './GameModal';
+import { LoginModal } from './LoginModal';
 import { useI18n } from '../lib/i18n';
 import { useLocalizedGame } from '../lib/localizedGames';
+import { useAuth } from '../hooks/useAuth';
 
 const featuredGames = GAMES.filter(g => g.featured);
 
 export function FeaturedCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const { t } = useI18n();
+  const { isAuthenticated } = useAuth();
 
   const goToPrevious = () => setCurrentIndex((prev) => (prev - 1 + featuredGames.length) % featuredGames.length);
   const goToNext = () => setCurrentIndex((prev) => (prev + 1) % featuredGames.length);
@@ -117,7 +121,7 @@ export function FeaturedCarousel() {
               transition={{ delay: 0.4 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setShowModal(true)}
+              onClick={() => isAuthenticated ? setShowModal(true) : setShowLogin(true)}
               className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-neon-cyan to-neon-purple text-white font-bold text-base sm:text-lg rounded-xl flex items-center justify-center gap-2 transition-all hover:shadow-lg hover:shadow-neon-cyan/50"
             >
               <IoPlay /> {t('playNow') as string}
@@ -148,6 +152,12 @@ export function FeaturedCarousel() {
     </section>
 
       {showModal && <GameModal game={currentGame} onClose={() => setShowModal(false)} />}
+      {showLogin && (
+        <LoginModal
+          onClose={() => setShowLogin(false)}
+          onSuccess={() => setShowModal(true)}
+        />
+      )}
     </>
   );
 }
