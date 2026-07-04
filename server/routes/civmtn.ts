@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { normalizeMsisdn } from '@shared/civmtn';
+import { normalizeMsisdn } from '../../shared/civmtn';
 
 const BASE = process.env.CIVMTN_API_BASE ?? 'http://168.144.122.72/prod';
 const DEFAULT_PID = process.env.CIVMTN_PID ?? '3';
