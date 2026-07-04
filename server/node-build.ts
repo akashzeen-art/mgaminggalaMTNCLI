@@ -12,12 +12,14 @@ const distPath = path.join(__dirname, "../spa");
 // Serve static files
 app.use(express.static(distPath));
 
-// Handle React Router - serve index.html for all non-API routes (Express 5 syntax)
-app.get("/{*splat}", (req, res) => {
-  if (req.path.startsWith("/api/") || req.path.startsWith("/health")) {
-    return res.status(404).json({ error: "API endpoint not found" });
+// SPA fallback for React Router (must be after API routes; no wildcard path — Express 5 safe)
+app.use((req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    return next();
   }
-
+  if (req.path.startsWith("/api/") || req.path.startsWith("/health")) {
+    return next();
+  }
   res.sendFile(path.join(distPath, "index.html"));
 });
 

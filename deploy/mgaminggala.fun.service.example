@@ -1,0 +1,33 @@
+# systemd unit for mgaminggala.fun ONLY — does not affect other projects.
+#
+# 1. Find the port nginx already uses for mgaminggala.fun:
+#      grep -r "mgaminggala.fun" /etc/nginx/sites-enabled/
+#    Use that port in .env below (do NOT use another project's port).
+#
+# 2. Copy and enable:
+#      sudo cp deploy/mgaminggala.fun.service.example /etc/systemd/system/mgaminggala.fun.service
+#      sudo systemctl daemon-reload
+#      sudo systemctl enable mgaminggala.fun
+#      sudo systemctl start mgaminggala.fun
+#
+# 3. After deploy:
+#      npm run build && sudo systemctl restart mgaminggala.fun
+#
+# 4. Test on domain (not localhost):
+#      curl "https://mgaminggala.fun/api/civmtn/login?pid=3&msisdn=225YOUR_NUMBER"
+
+[Unit]
+Description=mgaminggala.fun (MTN CIV)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/vasnumero/gaminggala_Projects/mgaminggala_MTN_CIV
+EnvironmentFile=/var/www/vasnumero/gaminggala_Projects/mgaminggala_MTN_CIV/.env
+ExecStart=/usr/bin/node dist/server/node-build.mjs
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
