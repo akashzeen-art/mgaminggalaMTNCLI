@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX } from 'react-icons/hi';
 import { useAuth } from '../hooks/useAuth';
+import { checkCivMtnLogin, normalizeMsisdn } from '../lib/civmtnLogin';
 
-const PID = 3;
-const LOGIN_API = (msisdn: string) => `/api/civmtn/login?pid=${PID}&msisdn=${msisdn}`;
-const SUBSCRIBE_URL = 'http://168.144.122.72/prod/LP/landing?creatid=3&hash=CIVMTN';
+import { getSubscribeUrl } from '@shared/civmtnConfig';
 
 interface LoginModalProps {
   onClose: () => void;
@@ -24,26 +23,34 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
     e.preventDefault();
     if (!number.trim()) return;
 
-    const msisdn = `225${number.trim()}`;
+    const msisdn = normalizeMsisdn(number.trim());
     setLoading(true);
     setError('');
+    setInactive(false);
+    setInsufficient(false);
 
     try {
-      const res = await fetch(LOGIN_API(msisdn));
-      const data = await res.json();
+      const { ok, data } = await checkCivMtnLogin(msisdn);
+
+      if (!ok) {
+        setError(data.error || 'Could not verify subscription. Please try again.');
+        return;
+      }
 
       if (data.response === 'ACTIVE') {
         login({
           msisdn,
-          actDate: data.actDate,
-          renewDate: data.renewDate,
-          pricePoint: data.pricePoint,
-          validity: data.validity,
-          unsubUrl: data.unsubUrl,
-        });
-        onSuccess();
+          actDate: data.actDate ?? '',
+          renewDate: data.renewDate ?? '',
+          pricePoint: data.pricePoint ?? '',
+          validity: data.validity ?? '',
+          unsubUrl: data.unsubUrl ?? '',
+        }, { openAccount: true });
         onClose();
-      } else if (data.response === 'INSUFFICIENT') {
+        return;
+      }
+
+      if (data.response === 'INSUFFICIENT') {
         setInsufficient(true);
       } else {
         setInactive(true);
@@ -99,7 +106,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
               <p className="text-slate-700 font-semibold text-sm">Insufficient Balance</p>
               <p className="text-slate-500 text-xs">You don't have enough balance to subscribe. Please recharge and try again.</p>
               <motion.a
-                href={SUBSCRIBE_URL}
+                href={getSubscribeUrl()}
                 whileTap={{ scale: 0.97 }}
                 className="block w-full py-2.5 rounded-xl text-white font-semibold text-sm text-center"
                 style={{ background: 'linear-gradient(135deg, #06b6d4, #a855f7)' }}
@@ -122,7 +129,7 @@ export function LoginModal({ onClose, onSuccess }: LoginModalProps) {
               <p className="text-slate-700 font-semibold text-sm">Your subscription is not active.</p>
               <p className="text-slate-500 text-xs">Click below to activate.</p>
               <motion.a
-                href={SUBSCRIBE_URL}
+                href={getSubscribeUrl()}
                 whileTap={{ scale: 0.97 }}
                 className="block w-full py-2.5 rounded-xl text-white font-semibold text-sm text-center"
                 style={{ background: 'linear-gradient(135deg, #06b6d4, #a855f7)' }}

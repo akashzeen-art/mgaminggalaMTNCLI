@@ -10,8 +10,16 @@ import { useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { I18nProvider, Lang } from "./lib/i18n";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { AccountModal } from "./components/AccountModal";
 
 const queryClient = new QueryClient();
+
+function AccountModalHost() {
+  const { showAccount, closeAccount } = useAuth();
+  if (!showAccount) return null;
+  return <AccountModal onClose={closeAccount} />;
+}
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -31,23 +39,26 @@ function LangWrapper({ lang }: { lang: Lang }) {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<LangWrapper lang="en" />} />
-          <Route path="/fr" element={<LangWrapper lang="fr" />} />
-          <Route path="/fr/*" element={<LangWrapper lang="fr" />} />
-          <Route path="/ar" element={<LangWrapper lang="ar" />} />
-          <Route path="/ar/*" element={<LangWrapper lang="ar" />} />
-          <Route path="/game/:id" element={<Navigate to="/" replace />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <AccountModalHost />
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<LangWrapper lang="en" />} />
+            <Route path="/fr" element={<LangWrapper lang="fr" />} />
+            <Route path="/fr/*" element={<LangWrapper lang="fr" />} />
+            <Route path="/ar" element={<LangWrapper lang="ar" />} />
+            <Route path="/ar/*" element={<LangWrapper lang="ar" />} />
+            <Route path="/game/:id" element={<Navigate to="/" replace />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

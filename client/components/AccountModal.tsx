@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX } from 'react-icons/hi';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth, type AuthUser } from '../hooks/useAuth';
+import { checkCivMtnLogin, type CivMtnLoginResult } from '../lib/civmtnLogin';
 
 const PID = 3;
 const UNSUB_API = (msisdn: string) => `/api/civmtn/unsub?pid=${PID}&msisdn=${msisdn}`;
@@ -12,11 +13,50 @@ interface AccountModalProps {
   onClose: () => void;
 }
 
+function formatDetail(value?: string) {
+  return value?.trim() ? value : '—';
+}
+
+function mapActiveUser(msisdn: string, data: CivMtnLoginResult): AuthUser {
+  return {
+    msisdn,
+    actDate: data.actDate ?? '',
+    renewDate: data.renewDate ?? '',
+    pricePoint: data.pricePoint ?? '',
+    validity: data.validity ?? '',
+    unsubUrl: data.unsubUrl ?? '',
+  };
+}
+
 export function AccountModal({ onClose }: AccountModalProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [screen, setScreen] = useState<Screen>('account');
   const [loading, setLoading] = useState(false);
+  const [loadingDetails, setLoadingDetails] = useState(true);
   const [failMsg, setFailMsg] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+
+    let cancelled = false;
+    setLoadingDetails(true);
+
+    checkCivMtnLogin(user.msisdn)
+      .then(({ ok, data }) => {
+        if (cancelled || !ok) return;
+        if (data.response === 'ACTIVE') {
+          updateUser(mapActiveUser(user.msisdn, data));
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoadingDetails(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.msisdn, updateUser]);
 
   if (!user) return null;
 
@@ -46,6 +86,15 @@ export function AccountModal({ onClose }: AccountModalProps) {
     screen === 'fail'    ? 'Failed' :
     'My Account';
 
+  const details = [
+    { label: 'Mobile', value: `+${user.msisdn}` },
+    { label: 'Status', value: <span className="text-green-600 font-semibold">Active ✓</span> },
+    { label: 'Activated', value: formatDetail(user.actDate) },
+    { label: 'Renews', value: formatDetail(user.renewDate) },
+    { label: 'Price', value: formatDetail(user.pricePoint) },
+    { label: 'Validity', value: user.validity ? `${user.validity} day(s)` : '—' },
+  ];
+
   return (
     <AnimatePresence>
       <motion.div
@@ -64,7 +113,6 @@ export function AccountModal({ onClose }: AccountModalProps) {
           className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
           <div
             className="px-6 py-4 text-white flex items-center justify-between"
             style={{ background: 'linear-gradient(135deg, #06b6d4, #a855f7)' }}
@@ -76,36 +124,31 @@ export function AccountModal({ onClose }: AccountModalProps) {
           </div>
 
           <div className="px-6 py-5">
-
-            {/* Account details */}
             {screen === 'account' && (
               <div className="space-y-3">
-                <div className="space-y-2">
-                  {[
-                    { label: 'Mobile',    value: `+${user.msisdn}` },
-                    { label: 'Status',    value: <span className="text-green-600 font-semibold">Active ✓</span> },
-                    { label: 'Activated', value: user.actDate },
-                    { label: 'Renews',    value: user.renewDate },
-                    { label: 'Price',     value: user.pricePoint },
-                    { label: 'Validity',  value: `${user.validity} day(s)` },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0">
-                      <span className="text-slate-500 text-xs">{label}</span>
-                      <span className="text-slate-800 text-xs font-medium">{value}</span>
-                    </div>
-                  ))}
-                </div>
+                {loadingDetails ? (
+                  <p className="text-center text-slate-500 text-sm py-6">Loading account details...</p>
+                ) : (
+                  <div className="space-y-2">
+                    {details.map(({ label, value }) => (
+                      <div key={label} className="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0 gap-4">
+                        <span className="text-slate-500 text-xs shrink-0">{label}</span>
+                        <span className="text-slate-800 text-xs font-medium text-right">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => setScreen('confirm')}
-                  className="w-full mt-1 py-2.5 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors"
+                  disabled={loadingDetails}
+                  className="w-full mt-1 py-2.5 rounded-xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 transition-colors disabled:opacity-50"
                 >
                   Unsubscribe
                 </motion.button>
               </div>
             )}
 
-            {/* Confirm screen */}
             {screen === 'confirm' && (
               <div className="space-y-4 text-center py-2">
                 <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto">
@@ -132,7 +175,6 @@ export function AccountModal({ onClose }: AccountModalProps) {
               </div>
             )}
 
-            {/* Success screen */}
             {screen === 'success' && (
               <div className="space-y-4 text-center py-2">
                 <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto">
@@ -151,7 +193,6 @@ export function AccountModal({ onClose }: AccountModalProps) {
               </div>
             )}
 
-            {/* Fail screen */}
             {screen === 'fail' && (
               <div className="space-y-4 text-center py-2">
                 <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto">
@@ -176,7 +217,6 @@ export function AccountModal({ onClose }: AccountModalProps) {
                 </div>
               </div>
             )}
-
           </div>
         </motion.div>
       </motion.div>

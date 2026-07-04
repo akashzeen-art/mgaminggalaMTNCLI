@@ -6,57 +6,88 @@ import { HeroSection } from '../components/HeroSection';
 import { FeaturedCarousel } from '../components/FeaturedCarousel';
 import { GameLibrary } from '../components/GameLibrary';
 import { CategoriesSection } from '../components/CategoriesSection';
-import { NewsletterSection } from '../components/NewsletterSection';
 import { Footer } from '../components/Footer';
 import { AnimatedBackground } from '../components/AnimatedBackground';
 import { GameFullscreenProvider } from '../lib/gameFullscreen';
-import { LoginModal } from '../components/LoginModal';
 import { useAuth } from '../hooks/useAuth';
+import {
+  checkCivMtnLogin,
+  normalizeMsisdn,
+  getLandingMsisdn,
+  clearLandingMsisdnFromUrl,
+} from '../lib/civmtnLogin';
 
-const PID = 3;
-const LOGIN_API = (msisdn: string) => `/api/civmtn/login?pid=${PID}&msisdn=${msisdn}`;
-const SUBSCRIBE_URL = 'http://168.144.122.72/prod/LP/landing?creatid=3&hash=CIVMTN';
+import { getSubscribeUrl } from '@shared/civmtnConfig';
 
 export default function Index() {
   const [showPreloader, setShowPreloader] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [landingPopup, setLandingPopup] = useState<'inactive' | 'insufficient' | null>(null);
+  const [scrollToGamesAfterLanding, setScrollToGamesAfterLanding] = useState(false);
   const { login, isAuthenticated } = useAuth();
+  const landingHandled = useRef(false);
 
   const gamesRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
 
-  // Auto-check msisdn from landing page redirect
+  // Landing page redirect: ?msisdn=... — if ACTIVE, log in and enter the site
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const msisdn = params.get('msisdn');
-    if (!msisdn || isAuthenticated) return;
+    if (landingHandled.current) return;
 
-    fetch(LOGIN_API(msisdn))
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.response === 'ACTIVE') {
+    const msisdn = getLandingMsisdn();
+    if (!msisdn) return;
+
+    landingHandled.current = true;
+
+    if (isAuthenticated) {
+      clearLandingMsisdnFromUrl();
+      setShowPreloader(false);
+      return;
+    }
+
+    checkCivMtnLogin(msisdn)
+      .then(({ ok, data }) => {
+        clearLandingMsisdnFromUrl();
+        setShowPreloader(false);
+
+        if (ok && data.response === 'ACTIVE') {
           login({
-            msisdn,
-            actDate: data.actDate,
-            renewDate: data.renewDate,
-            pricePoint: data.pricePoint,
-            validity: data.validity,
-            unsubUrl: data.unsubUrl,
+            msisdn: normalizeMsisdn(msisdn),
+            actDate: data.actDate ?? '',
+            renewDate: data.renewDate ?? '',
+            pricePoint: data.pricePoint ?? '',
+            validity: data.validity ?? '',
+            unsubUrl: data.unsubUrl ?? '',
           });
-        } else if (data.response === 'INSUFFICIENT') {
+          setScrollToGamesAfterLanding(true);
+          return;
+        }
+
+        if (ok && data.response === 'INSUFFICIENT') {
           setLandingPopup('insufficient');
         } else {
           setLandingPopup('inactive');
         }
       })
-      .catch(() => setLandingPopup('inactive'));
+      .catch(() => {
+        clearLandingMsisdnFromUrl();
+        setShowPreloader(false);
+        setLandingPopup('inactive');
+      });
+  }, [isAuthenticated, login]);
 
-    // Clean msisdn from URL without reload
-    const url = new URL(window.location.href);
-    url.searchParams.delete('msisdn');
-    window.history.replaceState({}, '', url.toString());
-  }, []);
+  // After active landing login, scroll user into the game library
+  useEffect(() => {
+    if (!scrollToGamesAfterLanding || showPreloader) return;
+
+    setSelectedCategory('All');
+    const timer = setTimeout(() => {
+      gamesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setScrollToGamesAfterLanding(false);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [scrollToGamesAfterLanding, showPreloader]);
 
   const handleNavClick = (name: string) => {
     if (name === 'Home') {
@@ -104,7 +135,6 @@ export default function Index() {
           <AnimatedBackground />
           <Navbar onNavClick={handleNavClick} />
 
-          {/* Landing page status popup */}
           {landingPopup && (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -137,7 +167,7 @@ export default function Index() {
                       : 'Please subscribe to access all games.'}
                   </p>
                   <a
-                    href={SUBSCRIBE_URL}
+                    href={getSubscribeUrl()}
                     className="block w-full py-2.5 rounded-xl text-white font-semibold text-sm text-center"
                     style={{ background: 'linear-gradient(135deg, #06b6d4, #a855f7)' }}
                   >

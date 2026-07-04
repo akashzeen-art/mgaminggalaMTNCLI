@@ -5,16 +5,14 @@ import { HiUserCircle } from 'react-icons/hi';
 import { useI18n } from '../lib/i18n';
 import { useGameFullscreen } from '../lib/gameFullscreen';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { AccountModal } from './AccountModal';
 import { useAuth } from '../hooks/useAuth';
 
 export function Navbar({ onNavClick }: { onNavClick: (name: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [showAccount, setShowAccount] = useState(false);
   const { t } = useI18n();
   const { isFullscreen } = useGameFullscreen();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, openAccount } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -74,7 +72,7 @@ export function Navbar({ onNavClick }: { onNavClick: (name: string) => void }) {
             {isAuthenticated && (
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={() => setShowAccount(true)}
+                onClick={openAccount}
                 className="p-1.5 text-slate-600 hover:text-purple-600 transition-colors rounded-lg hover:bg-slate-100"
                 title="My Account"
               >
@@ -88,7 +86,7 @@ export function Navbar({ onNavClick }: { onNavClick: (name: string) => void }) {
             {isAuthenticated && (
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={() => setShowAccount(true)}
+                onClick={openAccount}
                 className="p-1.5 text-slate-600 hover:text-purple-600 transition-colors"
               >
                 <HiUserCircle className="text-2xl" />
@@ -125,7 +123,6 @@ export function Navbar({ onNavClick }: { onNavClick: (name: string) => void }) {
           </motion.div>
         )}
       </div>
-      {showAccount && <AccountModal onClose={() => setShowAccount(false)} />}
     </motion.nav>
   );
 }
